@@ -56,7 +56,7 @@ export default function HomePage() {
     calls: string;
   } | null>(null);
   const [paymentTab, setPaymentTab] = useState<'payoneer' | 'crypto' | 'momo_bank' | 'rapidapi'>('payoneer');
-  const [cryptoSubTab, setCryptoSubTab] = useState<'usdt-trc20' | 'usdt-polygon' | 'binance-pay'>('usdt-trc20');
+  const [cryptoSubTab, setCryptoSubTab] = useState<string>(PAYMENT_CONFIG.cryptoOptions[0]?.id || 'usdt-erc20');
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
 
   const handleCopyAddress = (text: string) => {

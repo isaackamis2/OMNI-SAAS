@@ -18,7 +18,7 @@ export interface CryptoOption {
 
 export interface PaymentConfig {
   email: string;
-  whatsappNumber: string; // e.g. '250780000000' (international format without +)
+  whatsappNumber: string; // International format without +
   payoneer: {
     email: string;
     accountName: string;
@@ -49,56 +49,56 @@ export interface PaymentConfig {
 
 export const PAYMENT_CONFIG: PaymentConfig = {
   email: 'isaackamis@gmail.com',
-  whatsappNumber: '250780000000', // Isaac can set his direct phone number here
+  whatsappNumber: '250788648898', // Isaac's direct WhatsApp line
   payoneer: {
     email: 'isaackamis@gmail.com',
     accountName: 'Isiaka Kamana',
     note: 'Pay directly via Payoneer account transfer (0% fee) or request a Credit Card / ACH payment link.',
     receivingBankDetails: {
       bankName: 'First Century Bank / Citibank (Payoneer USD)',
-      routingNumber: '061000227', // Placeholder, update once ready
+      routingNumber: '061000227', // Placeholder, update once approved
       accountNumber: 'Available upon request / in dashboard',
       accountType: 'Checking',
     },
   },
   cryptoOptions: [
     {
-      id: 'usdt-trc20',
-      name: 'USDT (TRC-20)',
-      network: 'Tron TRC-20',
-      address: 'TYDzsYUEW8qMxbGzU8c6r9vGZ4hQeM7V7X', // Replace with your real USDT TRC20 address
-      badge: 'Zero / Low Fees • Recommended',
-      note: 'Send USDT via the Tron (TRC20) network only.',
+      id: 'usdt-erc20',
+      name: 'USDT (Ethereum ERC-20)',
+      network: 'Ethereum (ERC-20)',
+      address: '0xcaa8c76229692b641e35d5bc7f1b1e98ede10801',
+      badge: 'Binance Verified Address',
+      note: 'Send USDT via Ethereum (ERC-20) network to your Binance deposit address.',
     },
     {
-      id: 'usdt-polygon',
-      name: 'USDT / USDC (Polygon)',
-      network: 'Polygon (MATIC) Network',
-      address: '0x71C8F7A183c27e8aAf4925828695034c4C66C3E4', // Replace with your Polygon address
-      badge: 'Fast & Low Gas',
-      note: 'Send USDT or USDC via the Polygon PoS network.',
+      id: 'usdt-bep20',
+      name: 'USDT (BNB Chain / Polygon)',
+      network: 'BNB Smart Chain (BEP-20) / Polygon',
+      address: '0xcaa8c76229692b641e35d5bc7f1b1e98ede10801',
+      badge: 'Ultra Low Gas',
+      note: 'Send USDT via BNB Chain (BEP20) or Polygon network to this Binance EVM address.',
     },
     {
       id: 'binance-pay',
       name: 'Binance Pay',
-      network: 'Binance Pay ID / Email',
-      address: 'isaackamis@gmail.com', // Replace with Binance Pay ID or Pay Email
-      badge: 'Instant Transfer',
-      note: 'Transfer directly using Binance Pay ID or Email with zero fees.',
+      network: 'Binance Pay Email / Direct',
+      address: 'isaackamis@gmail.com',
+      badge: 'Instant Transfer • Zero Fees',
+      note: 'Transfer directly using Binance Pay via Email (isaackamis@gmail.com) with 0% fees.',
     },
   ],
   mobileMoney: {
-    provider: 'MTN Mobile Money & Airtel Money',
+    provider: 'MTN Mobile Money',
     accountName: 'Isiaka Kamana (Isaac)',
-    numberOrCode: '+250 78X XXX XXX / MoMo Code', // Replace with active MoMo number or Merchant Code
-    instructions: 'Send payment via MoMo Pay or direct transfer. Use your Email as reference.',
+    numberOrCode: '+250 788 648 898',
+    instructions: 'Send payment via MTN MoMo to +250 788 648 898. Use your email or plan name as reference.',
   },
   bankWire: {
     bankName: 'Bank of Kigali / Equity Bank',
     accountName: 'Isiaka Kamana (Isaac)',
-    accountNumber: '0000-XXXX-XXXX-XXXX', // Replace with bank account number
+    accountNumber: '0000-XXXX-XXXX-XXXX',
     swiftCode: 'BKIGRWRW',
     country: 'Rwanda',
   },
-  rapidApiUrl: 'https://rapidapi.com/hub',
+  rapidApiUrl: 'https://rapidapi.com/isaackamis/api/omniintel-global-market-intelligence-sentiment-engine',
 };
