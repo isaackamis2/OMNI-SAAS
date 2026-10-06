@@ -26,8 +26,17 @@ import {
   Check,
   CreditCard,
   X,
+  Coins,
+  Building2,
+  Smartphone,
+  MessageSquare,
+  Mail,
+  ExternalLink,
+  ShieldCheck,
+  Wallet,
 } from 'lucide-react';
 import { queryIntel, requestApiKey } from '@/lib/api';
+import { PAYMENT_CONFIG } from '@/lib/paymentConfig';
 
 export default function HomePage() {
   const [searchQuery, setSearchQuery] = useState('Artificial Intelligence');
@@ -46,6 +55,15 @@ export default function HomePage() {
     price: string;
     calls: string;
   } | null>(null);
+  const [paymentTab, setPaymentTab] = useState<'payoneer' | 'crypto' | 'momo_bank' | 'rapidapi'>('payoneer');
+  const [cryptoSubTab, setCryptoSubTab] = useState<'usdt-trc20' | 'usdt-polygon' | 'binance-pay'>('usdt-trc20');
+  const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+
+  const handleCopyAddress = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedAddress(text);
+    setTimeout(() => setCopiedAddress(null), 2500);
+  };
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -341,59 +359,348 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Global Checkout Modal */}
+      {/* Global Multi-Gateway Checkout Modal */}
       {checkoutPlan && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 overflow-y-auto">
+          <div className="bg-gray-900 border border-gray-800 rounded-3xl max-w-lg w-full p-6 sm:p-7 shadow-2xl relative my-8">
             <button
               onClick={() => setCheckoutPlan(null)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white"
+              className="absolute top-4 right-4 text-gray-400 hover:text-white p-2 rounded-xl hover:bg-gray-800/80 transition-all"
             >
               <X className="h-5 w-5" />
             </button>
 
+            {/* Plan Header */}
             <div className="text-center mb-6">
-              <span className="text-xs uppercase font-semibold text-blue-400 tracking-wider">
-                Instant Subscription
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20 uppercase tracking-wider">
+                <Zap className="h-3 w-3" /> Instant Subscription
               </span>
-              <h3 className="text-2xl font-bold text-white mt-1">{checkoutPlan.name}</h3>
+              <h3 className="text-2xl font-bold text-white mt-2">{checkoutPlan.name}</h3>
               <div className="mt-2 text-3xl font-extrabold text-white">
                 {checkoutPlan.price} <span className="text-sm font-normal text-gray-400">/ month</span>
               </div>
               <p className="text-xs text-gray-400 mt-1">Includes {checkoutPlan.calls} API calls & dashboard access</p>
             </div>
 
-            <div className="space-y-3">
-              {/* Option 1: PayPal */}
-              <a
-                href={`https://www.paypal.com/paypalme/isaackamis/${checkoutPlan.price.replace('$', '')}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-3 px-4 rounded-xl font-semibold text-xs bg-[#0070ba] hover:bg-[#005ea6] text-white flex items-center justify-center gap-2 transition-all shadow-md"
+            {/* Gateway Navigation Tabs */}
+            <div className="grid grid-cols-4 gap-1.5 p-1 bg-gray-950/80 rounded-2xl border border-gray-800 mb-6">
+              <button
+                type="button"
+                onClick={() => setPaymentTab('payoneer')}
+                className={`flex flex-col sm:flex-row items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-semibold transition-all ${
+                  paymentTab === 'payoneer'
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                }`}
               >
-                Pay with PayPal ({checkoutPlan.price}/mo)
-              </a>
+                <CreditCard className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">Payoneer</span>
+              </button>
 
-              {/* Option 2: RapidAPI */}
-              <a
-                href="https://rapidapi.com/hub"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full py-3 px-4 rounded-xl font-semibold text-xs bg-gray-800 hover:bg-gray-700 text-white border border-gray-700 flex items-center justify-center gap-2 transition-all"
+              <button
+                type="button"
+                onClick={() => setPaymentTab('crypto')}
+                className={`flex flex-col sm:flex-row items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-semibold transition-all ${
+                  paymentTab === 'crypto'
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                }`}
               >
-                Subscribe via RapidAPI Developer Portal
-              </a>
+                <Coins className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">Crypto</span>
+              </button>
 
-              {/* Option 3: Raenest / Wire Invoice */}
-              <a
-                href={`mailto:isaackamis@gmail.com?subject=OmniIntel%20Subscription%20Invoice%20-${checkoutPlan.name}`}
-                className="w-full py-2.5 px-4 rounded-xl font-medium text-xs bg-gray-950 hover:bg-gray-800 text-gray-300 border border-gray-800 flex items-center justify-center gap-2 transition-all"
+              <button
+                type="button"
+                onClick={() => setPaymentTab('momo_bank')}
+                className={`flex flex-col sm:flex-row items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-semibold transition-all ${
+                  paymentTab === 'momo_bank'
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                }`}
               >
-                Request Corporate Invoice (Raenest / Bank Wire)
-              </a>
+                <Smartphone className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">MoMo / Wire</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPaymentTab('rapidapi')}
+                className={`flex flex-col sm:flex-row items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-semibold transition-all ${
+                  paymentTab === 'rapidapi'
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                    : 'text-gray-400 hover:text-white hover:bg-gray-800/50'
+                }`}
+              >
+                <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">RapidAPI</span>
+              </button>
             </div>
 
-            <p className="text-[11px] text-gray-500 text-center mt-4">
+            {/* TAB CONTENT */}
+
+            {/* 1. Payoneer & Card Tab */}
+            {paymentTab === 'payoneer' && (
+              <div className="space-y-4">
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-950/40 to-gray-950 border border-blue-500/30">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-blue-400 flex items-center gap-1.5">
+                      <CreditCard className="h-4 w-4" /> Global Card, ACH & Payoneer Transfer
+                    </span>
+                    <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                      Zero Fees
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-300 mt-2">
+                    {PAYMENT_CONFIG.payoneer.note}
+                  </p>
+
+                  <div className="mt-3 p-3 bg-gray-900 rounded-xl border border-gray-800 flex items-center justify-between">
+                    <div>
+                      <div className="text-[11px] text-gray-400">Payoneer Receiving Email:</div>
+                      <div className="text-xs font-mono font-bold text-white select-all">
+                        {PAYMENT_CONFIG.payoneer.email}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleCopyAddress(PAYMENT_CONFIG.payoneer.email)}
+                      className="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs font-medium text-white flex items-center gap-1.5 transition-colors"
+                    >
+                      {copiedAddress === PAYMENT_CONFIG.payoneer.email ? (
+                        <>
+                          <Check className="h-3.5 w-3.5 text-emerald-400" /> Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3.5 w-3.5" /> Copy Email
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Direct Action buttons */}
+                <div className="space-y-2">
+                  <a
+                    href={`https://wa.me/${PAYMENT_CONFIG.whatsappNumber}?text=${encodeURIComponent(`Hi Isaac, I want to subscribe to OmniIntel ${checkoutPlan.name} (${checkoutPlan.price}/month) via Payoneer. Please send me the Payoneer invoice / payment link.`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-3 px-4 rounded-xl font-semibold text-xs bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center gap-2 transition-all shadow-md shadow-emerald-600/20"
+                  >
+                    <MessageSquare className="h-4 w-4" /> Request Payoneer Invoice via WhatsApp
+                  </a>
+
+                  <a
+                    href={`mailto:${PAYMENT_CONFIG.email}?subject=${encodeURIComponent(`OmniIntel Payoneer Invoice Request - ${checkoutPlan.name}`)}&body=${encodeURIComponent(`Hi Isaac,\n\nI would like to subscribe to OmniIntel ${checkoutPlan.name} (${checkoutPlan.price}/month) via Payoneer / Credit Card.\n\nPlease send me a Payoneer payment link or invoice.\n\nThank you!`)}`}
+                    className="w-full py-2.5 px-4 rounded-xl font-medium text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 flex items-center justify-center gap-2 transition-all"
+                  >
+                    <Mail className="h-4 w-4" /> Request Payoneer Invoice via Email
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {/* 2. Crypto Tab */}
+            {paymentTab === 'crypto' && (
+              <div className="space-y-4">
+                {/* Sub-selector for Crypto networks */}
+                <div className="grid grid-cols-3 gap-2">
+                  {PAYMENT_CONFIG.cryptoOptions.map((opt) => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setCryptoSubTab(opt.id as any)}
+                      className={`p-2 rounded-xl text-center border text-[11px] font-semibold transition-all ${
+                        cryptoSubTab === opt.id
+                          ? 'bg-blue-600/20 border-blue-500 text-white'
+                          : 'bg-gray-950 border-gray-800 text-gray-400 hover:text-white'
+                      }`}
+                    >
+                      {opt.name}
+                    </button>
+                  ))}
+                </div>
+
+                {(() => {
+                  const activeCrypto = PAYMENT_CONFIG.cryptoOptions.find((c) => c.id === cryptoSubTab) || PAYMENT_CONFIG.cryptoOptions[0];
+                  return (
+                    <div className="p-4 rounded-2xl bg-gray-950 border border-gray-800 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                          <Coins className="h-4 w-4 text-amber-400" /> {activeCrypto.network}
+                        </span>
+                        {activeCrypto.badge && (
+                          <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/20">
+                            {activeCrypto.badge}
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-[11px] text-gray-400">{activeCrypto.note}</p>
+
+                      <div className="p-3 bg-gray-900 rounded-xl border border-gray-800 flex items-center justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-[10px] text-gray-400 uppercase font-semibold">Deposit Address / ID:</div>
+                          <div className="text-xs font-mono font-bold text-emerald-400 truncate select-all">
+                            {activeCrypto.address}
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyAddress(activeCrypto.address)}
+                          className="shrink-0 px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs font-medium text-white flex items-center gap-1.5 transition-colors"
+                        >
+                          {copiedAddress === activeCrypto.address ? (
+                            <>
+                              <Check className="h-3.5 w-3.5 text-emerald-400" /> Copied!
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-3.5 w-3.5" /> Copy
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      <div className="text-[11px] text-blue-400 bg-blue-950/30 border border-blue-800/40 rounded-xl p-2.5 text-center">
+                        Amount to send: <span className="font-bold text-white">{checkoutPlan.price} USDT / USDC</span>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Crypto Actions */}
+                <div className="space-y-2">
+                  <a
+                    href={`https://wa.me/${PAYMENT_CONFIG.whatsappNumber}?text=${encodeURIComponent(`Hi Isaac, I just sent ${checkoutPlan.price} in crypto for the OmniIntel ${checkoutPlan.name} subscription. Here is my transaction hash / proof for activation:`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-3 px-4 rounded-xl font-semibold text-xs bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center gap-2 transition-all shadow-md shadow-emerald-600/20"
+                  >
+                    <MessageSquare className="h-4 w-4" /> Confirm TxID via WhatsApp
+                  </a>
+
+                  <a
+                    href={`mailto:${PAYMENT_CONFIG.email}?subject=${encodeURIComponent(`OmniIntel Crypto Payment Proof - ${checkoutPlan.name}`)}&body=${encodeURIComponent(`Hi Isaac,\n\nI have sent ${checkoutPlan.price} for the ${checkoutPlan.name} tier.\n\nNetwork: ${cryptoSubTab}\nTransaction Hash / Link:\nMy Email:\n\nPlease generate and activate my production API key.\n\nThank you!`)}`}
+                    className="w-full py-2.5 px-4 rounded-xl font-medium text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 flex items-center justify-center gap-2 transition-all"
+                  >
+                    <Mail className="h-4 w-4" /> Email Payment Proof & TxID
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {/* 3. Mobile Money & Bank Wire Tab */}
+            {paymentTab === 'momo_bank' && (
+              <div className="space-y-4">
+                {/* Mobile Money Card */}
+                <div className="p-4 rounded-2xl bg-gray-950 border border-gray-800 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <Smartphone className="h-4 w-4 text-emerald-400" /> {PAYMENT_CONFIG.mobileMoney.provider}
+                    </span>
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+                      Mobile Money
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-gray-400">{PAYMENT_CONFIG.mobileMoney.instructions}</p>
+                  
+                  <div className="p-3 bg-gray-900 rounded-xl border border-gray-800 flex items-center justify-between">
+                    <div>
+                      <div className="text-[11px] text-gray-400">Recipient: <span className="text-white font-medium">{PAYMENT_CONFIG.mobileMoney.accountName}</span></div>
+                      <div className="text-xs font-mono font-bold text-white">{PAYMENT_CONFIG.mobileMoney.numberOrCode}</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleCopyAddress(PAYMENT_CONFIG.mobileMoney.numberOrCode)}
+                      className="px-3 py-1.5 rounded-lg bg-gray-800 hover:bg-gray-700 text-xs font-medium text-white flex items-center gap-1.5 transition-colors"
+                    >
+                      {copiedAddress === PAYMENT_CONFIG.mobileMoney.numberOrCode ? (
+                        <>
+                          <Check className="h-3.5 w-3.5 text-emerald-400" /> Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3.5 w-3.5" /> Copy Code
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Bank Wire Card */}
+                <div className="p-4 rounded-2xl bg-gray-950 border border-gray-800 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                      <Building2 className="h-4 w-4 text-blue-400" /> Direct Bank Wire Transfer
+                    </span>
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-300 border border-blue-500/20">
+                      Corporate / Wire
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-gray-300 space-y-1">
+                    <div><span className="text-gray-400">Bank:</span> {PAYMENT_CONFIG.bankWire.bankName} ({PAYMENT_CONFIG.bankWire.country})</div>
+                    <div><span className="text-gray-400">Beneficiary:</span> {PAYMENT_CONFIG.bankWire.accountName}</div>
+                    <div className="flex items-center justify-between">
+                      <span><span className="text-gray-400">Account:</span> <code className="text-emerald-400">{PAYMENT_CONFIG.bankWire.accountNumber}</code></span>
+                      <button
+                        type="button"
+                        onClick={() => handleCopyAddress(PAYMENT_CONFIG.bankWire.accountNumber)}
+                        className="px-2 py-0.5 rounded bg-gray-800 hover:bg-gray-700 text-[10px] font-medium text-white flex items-center gap-1 transition-colors"
+                      >
+                        <Copy className="h-3 w-3" /> Copy Acc
+                      </button>
+                    </div>
+                    <div><span className="text-gray-400">SWIFT / BIC:</span> <code className="text-blue-400">{PAYMENT_CONFIG.bankWire.swiftCode}</code></div>
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="space-y-2">
+                  <a
+                    href={`https://wa.me/${PAYMENT_CONFIG.whatsappNumber}?text=${encodeURIComponent(`Hi Isaac, I completed a Mobile Money / Bank transfer for OmniIntel ${checkoutPlan.name} (${checkoutPlan.price}/month). Here is my payment receipt:`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-3 px-4 rounded-xl font-semibold text-xs bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center gap-2 transition-all shadow-md shadow-emerald-600/20"
+                  >
+                    <MessageSquare className="h-4 w-4" /> Send Receipt via WhatsApp
+                  </a>
+
+                  <a
+                    href={`mailto:${PAYMENT_CONFIG.email}?subject=${encodeURIComponent(`OmniIntel MoMo / Wire Receipt - ${checkoutPlan.name}`)}&body=${encodeURIComponent(`Hi Isaac,\n\nI have transferred payment for OmniIntel ${checkoutPlan.name} (${checkoutPlan.price}/month).\n\nSender Name:\nReference / Transaction ID:\nAccount Email:\n\nPlease confirm and activate my API key.\n\nThank you!`)}`}
+                    className="w-full py-2.5 px-4 rounded-xl font-medium text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-700 flex items-center justify-center gap-2 transition-all"
+                  >
+                    <Mail className="h-4 w-4" /> Email Transfer Receipt
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {/* 4. RapidAPI Tab */}
+            {paymentTab === 'rapidapi' && (
+              <div className="space-y-4">
+                <div className="p-4 rounded-2xl bg-gray-950 border border-gray-800 space-y-3">
+                  <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                    <ExternalLink className="h-4 w-4 text-blue-400" /> RapidAPI Marketplace Integration
+                  </span>
+                  <p className="text-xs text-gray-300 leading-relaxed">
+                    Subscribe with automated monthly credit card billing through the world&apos;s largest API hub. Production keys are automatically provisioned and managed inside your RapidAPI developer dashboard.
+                  </p>
+                </div>
+
+                <a
+                  href={PAYMENT_CONFIG.rapidApiUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3 px-4 rounded-xl font-semibold text-xs bg-blue-600 hover:bg-blue-500 text-white border border-blue-500 flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-600/20"
+                >
+                  <ExternalLink className="h-4 w-4" /> Open RapidAPI Developer Portal
+                </a>
+              </div>
+            )}
+
+            <p className="text-[11px] text-gray-500 text-center mt-5">
               Instant activation • 256-bit encrypted checkout • Cancel anytime
             </p>
           </div>
